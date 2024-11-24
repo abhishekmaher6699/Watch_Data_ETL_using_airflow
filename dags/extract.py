@@ -22,9 +22,9 @@ async def fetch(session, url):
     try:
         headers = {"User-Agent": random.choice(USER_AGENTS)}
         async with session.get(url, headers=headers) as response:
-            if response.status == 429: 
+            if response.status != 200 : 
                 logging.warning(f"Rate limit hit, sleeping before retrying {url}")
-                await asyncio.sleep(5) 
+                await asyncio.sleep(180) 
                 return await fetch(session, url)  
             return await response.text()
     except asyncio.TimeoutError:
@@ -105,7 +105,7 @@ async def extract_single_watch(session, url):
         logging.error(f"Unexpected error occurred while fetching {url}: {e}")
         return None
 
-async def extract_watch_data(links, batch_size=10):
+async def extract_watch_data(links, batch_size=50):
     try:
         data = []
         async with aiohttp.ClientSession() as session:
@@ -116,8 +116,8 @@ async def extract_watch_data(links, batch_size=10):
                 
                 data.extend([watch_data for watch_data in results if watch_data is not None])
                 
-                logging.info(f"Batch {i // batch_size + 1} completed. Sleeping for 5 seconds.")
-                await asyncio.sleep(5)
+                logging.info(f"Batch {i // batch_size + 1} completed. Sleeping for 15 seconds.")
+                await asyncio.sleep(30)
         
         return data
     except Exception as e:
